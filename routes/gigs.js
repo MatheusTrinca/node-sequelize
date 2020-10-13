@@ -20,25 +20,53 @@ router.get('/add', (req, res) => {
 
 // Add a gig
 router.post('/add', (req, res) => {
-  const data = {
-    title: req.body.title,
-    technologies: req.body.technologies,
-    budget: req.body.technologies,
-    description: req.body.description,
-    contact_email: req.body.contact_email
+
+  let { title, technologies, budget, description, contact_email } = req.body;
+  
+  let errors = [];
+
+  if(!title){
+    errors.push({text: 'Title is required'});
   }
-  let { title, technologies, budget, description, contact_email } = data;
+  if(!technologies){
+    errors.push({text: 'At least one technology is required'});
+  }
+  if(!description){
+    errors.push({text: 'Please fill in description field'});
+  }
+  if(!contact_email){
+    errors.push({text: 'Email is required'});
+  }
 
-  Gig.create({
-    title,
-    technologies,
-    budget,
-    description,
-    contact_email
-  })
-  .then(gig => res.redirect('/gigs'))
-  .catch(err => console.log(err));
+  if(errors.length > 0){
+    res.render('add', {
+      errors,
+      title,
+      technologies,
+      budget,
+      description,
+      contact_email
+    })
+  }else{
+    if(!budget){
+      budget = 'Unknown';
+    }else{
+      budget = `$${budget}`;
+    }
 
+    // Deixar minúsculas e remover espaço depois da vírgula
+    technologies = technologies.toLowerCase().replace(/, /g, ',');
+
+    Gig.create({
+      title,
+      technologies,
+      budget,
+      description,
+      contact_email
+    })
+    .then(gig => res.redirect('/gigs'))
+    .catch(err => console.log(err));
+  }
 })
 
 module.exports = router;
